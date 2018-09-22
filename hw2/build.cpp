@@ -16,34 +16,42 @@ enum
     west = 0,
     east = 1,
     toll = 2,
-    buildable = 3,
-    built = 4
+    status = 3
+    // buildable = 3,
+    // built = 4
 };
 
-// void printAllNodes(vector<myBridge> &allnodes)
-// {
-//     for (auto n : allnodes)
-//     {
-//         for (auto m : n)
-//         {
-//             cout << m << " ";
-//         }
-//         cout << endl;
-//     }
-// }
+enum Status : int
+{
+    Buildable = 0,
+    Built = 1,
+    CannotBuild = 2
+};
 
-// void printList(vector<vector<int>> &allnodes)
-// {
-//     for (auto n : allnodes)
-//     {
-//         cout << "{";
-//         for (auto m : n)
-//         {
-//             cout << " " << m << " ";
-//         }
-//         cout << "}" << endl;
-//     }
-// }
+void printAllNodes(vector<myBridge> &allnodes)
+{
+    for (auto n : allnodes)
+    {
+        for (auto m : n)
+        {
+            cout << m << " ";
+        }
+        cout << endl;
+    }
+}
+
+void printList(vector<vector<int>> &allnodes)
+{
+    for (auto n : allnodes)
+    {
+        cout << "{";
+        for (auto m : n)
+        {
+            cout << " " << m << " ";
+        }
+        cout << "}" << endl;
+    }
+}
 
 vector<int> getBuildableBridges(vector<myBridge> &bridges)
 {
@@ -51,12 +59,12 @@ vector<int> getBuildableBridges(vector<myBridge> &bridges)
     vector<int> CanBuildCollection;
     for (int BridgeToBuildIndex = 0; BridgeToBuildIndex < bridges.size(); ++BridgeToBuildIndex)
     {
-        if (bridges[BridgeToBuildIndex][buildable] == true && bridges[BridgeToBuildIndex][built] == false)
+        if (bridges[BridgeToBuildIndex][status] == Status::Buildable)
         {
             bool buildableFlag = true;
             for (int BuiltBridgeIndex = 0; BuiltBridgeIndex < bridges.size(); ++BuiltBridgeIndex)
             {
-                if (bridges[BuiltBridgeIndex][built] == true)
+                if (bridges[BuiltBridgeIndex][status] == Status::Built)
                 {
                     int BuiltCityWest = bridges[BuiltBridgeIndex][west];
                     int BuiltCityEast = bridges[BuiltBridgeIndex][east];
@@ -82,8 +90,7 @@ vector<int> getBuildableBridges(vector<myBridge> &bridges)
     }
     for (auto n : CannotBuildCollection)
     {
-        bridges[n][buildable] = false;
-        bridges[n][built] = false;
+        bridges[n][status] = Status::CannotBuild;
     }
     return CanBuildCollection;
 }
@@ -111,8 +118,7 @@ void setAdjacencyList(vector<myBridge> &bridges, vector<vector<int>> &adjacencyL
     for (int i = 0; i < canBuild.size(); ++i)
     {
         bridges = currentBridgeState;
-        bridges[canBuild[i]][buildable] = false;
-        bridges[canBuild[i]][built] = true;
+        bridges[canBuild[i]][status] = Status::Built;
         listStarter.push_back(canBuild[i]);
         //printAllNodes(bridges);
         setAdjacencyList(bridges, adjacencyList, listStarter);
@@ -125,10 +131,10 @@ int getMaxTollPrice(vector<vector<int>> adjacencyList, const vector<Bridge> &bri
 {
 
     int maxToll = 0;
-    for (auto allBuiltBridges : adjacencyList)
+    for (auto &allBuiltBridges : adjacencyList)
     {
         int totalToll = 0;
-        for (auto singleBuiltBridgeIndex : allBuiltBridges)
+        for (auto &singleBuiltBridgeIndex : allBuiltBridges)
         {
             //cout << singleBuiltBridgeIndex << " ";
             totalToll += bridges[singleBuiltBridgeIndex][toll];
@@ -147,7 +153,6 @@ vector<myBridge> translateToMyBridgeType(const vector<Bridge> &bridges)
     auto copy = bridges;
     for (auto &n : copy)
     {
-        n.push_back(1);
         n.push_back(0);
     }
     return copy;
