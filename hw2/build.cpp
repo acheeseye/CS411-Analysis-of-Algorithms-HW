@@ -55,7 +55,6 @@ void printList(vector<vector<int>> &allnodes)
 
 vector<int> getBuildableBridges(vector<myBridge> &bridges)
 {
-    vector<int> CannotBuildCollection;
     vector<int> CanBuildCollection;
     for (int BridgeToBuildIndex = 0; BridgeToBuildIndex < bridges.size(); ++BridgeToBuildIndex)
     {
@@ -76,7 +75,7 @@ vector<int> getBuildableBridges(vector<myBridge> &bridges)
                         (BuiltCityWest > ToBuildWest && BuiltCityEast < ToBuildEast) ||
                         (BuiltCityWest == ToBuildWest || BuiltCityEast == ToBuildEast))
                     {
-                        CannotBuildCollection.push_back(BridgeToBuildIndex);
+                        bridges[BridgeToBuildIndex][status] = Status::CannotBuild;
                         buildableFlag = false;
                         break;
                     }
@@ -88,10 +87,6 @@ vector<int> getBuildableBridges(vector<myBridge> &bridges)
             }
         }
     }
-    for (auto n : CannotBuildCollection)
-    {
-        bridges[n][status] = Status::CannotBuild;
-    }
     return CanBuildCollection;
 }
 
@@ -101,32 +96,65 @@ vector<Bridge> getState(vector<myBridge> &bridges)
     return copy;
 }
 
-void setAdjacencyList(vector<myBridge> &bridges, vector<vector<int>> &adjacencyList, vector<int> &listStarter)
+int getTollSum(vector<Bridge> &bridges)
+{
+    int tollSum = 0;
+    for (auto bridge : bridges)
+    {
+        tollSum += bridge[toll];
+    }
+    return tollSum;
+}
+
+// YES time complexity
+//  -getBuildableBridges
+//  -push_back
+//  -pop_back
+
+//  -adjacencyList(not reserved) & listStarter (reserved)
+void setMaxToll(vector<myBridge> &bridges,
+                int &maxToll,
+                vector<int> &listStarter,
+                int listIndexer,
+                int maxBridgeCount)
 {
     auto canBuild = getBuildableBridges(bridges);
 
-    if (canBuild.size() == 0)
+    if (canBuild.size() == 0 || listIndexer == maxBridgeCount)
     {
-        adjacencyList.push_back(listStarter);
-        //printList(adjacencyList);
+        //cout << "left because max " << bool(listIndexer == maxBridgeCount) << endl;
+        //adjacencyList.push_back(listStarter);
+        //cout << adjacencyList.size() << endl;
+        int tollSum = 0;
+        for (auto bridgeID : listStarter)
+        {
+            tollSum += bridges[bridgeID][toll];
+        }
+
+        if (tollSum > maxToll)
+        {
+            maxToll = tollSum;
+        }
         listStarter.pop_back();
         return;
     }
 
     auto currentBridgeState = getState(bridges);
-    //printAllNodes(bridges);
     for (int i = 0; i < canBuild.size(); ++i)
     {
         bridges = currentBridgeState;
         bridges[canBuild[i]][status] = Status::Built;
         listStarter.push_back(canBuild[i]);
-        //printAllNodes(bridges);
-        setAdjacencyList(bridges, adjacencyList, listStarter);
+        listIndexer++;
+        //        listStarter[listIndexer++] = canBuild[i];
+
+        setMaxToll(bridges, maxToll, listStarter, listIndexer, maxBridgeCount);
     }
     listStarter.pop_back();
     return;
 }
 
+// no time complexity -- happens once
 int getMaxTollPrice(vector<vector<int>> adjacencyList, const vector<Bridge> &bridges)
 {
 
@@ -136,10 +164,8 @@ int getMaxTollPrice(vector<vector<int>> adjacencyList, const vector<Bridge> &bri
         int totalToll = 0;
         for (auto &singleBuiltBridgeIndex : allBuiltBridges)
         {
-            //cout << singleBuiltBridgeIndex << " ";
             totalToll += bridges[singleBuiltBridgeIndex][toll];
         }
-        //cout << endl;
         if (totalToll > maxToll)
         {
             maxToll = totalToll;
@@ -148,42 +174,48 @@ int getMaxTollPrice(vector<vector<int>> adjacencyList, const vector<Bridge> &bri
     return maxToll;
 }
 
+// no time complexity -- happens once
 vector<myBridge> translateToMyBridgeType(const vector<Bridge> &bridges)
 {
     auto copy = bridges;
     for (auto &n : copy)
     {
-        n.push_back(0);
+        n.push_back(Status::Buildable);
     }
     return copy;
 }
 
+// no time complexity in of itself -- master function
 int build(int w, int e, const vector<Bridge> &bridges)
 {
     int maxBridgeCount = min(w, e);
-    vector<myBridge>
-        myBridges = translateToMyBridgeType(bridges);
+    vector<myBridge> myBridges = translateToMyBridgeType(bridges);
     //printAllNodes(myBridges);
-    vector<vector<int>> adjacencyList{};
+    //vector<vector<int>> adjacencyList{};
+    //cout << adjacencyList.max_size() << endl;
+    //adjacencyList.reserve(100000000);
     vector<int> listStarter{};
-    setAdjacencyList(myBridges, adjacencyList, listStarter);
+    listStarter.reserve(maxBridgeCount);
+    int listIndexer = 0;
+    int maxToll = 0;
+    setMaxToll(myBridges, maxToll, listStarter, listIndexer, maxBridgeCount);
     //printList(adjacencyList);
-    return getMaxTollPrice(adjacencyList, bridges);
+    return maxToll;
 }
 
-// int main()
-// {
-//     int w = 3;
-//     int e = 3;
-//     const vector<Bridge> allNodes{
-//         Bridge{0, 1, 3},  //0
-//         Bridge{1, 1, 5},  //1
-//         Bridge{1, 2, 4},  //2
-//         Bridge{2, 0, 8},  //3
-//         Bridge{2, 2, 6},  //4
-//         Bridge{0, 0, 1}}; //5
+int main()
+{
+    int w = 3;
+    int e = 3;
+    const vector<Bridge> allNodes{
+        Bridge{0, 1, 3},  //0
+        Bridge{1, 1, 5},  //1
+        Bridge{1, 2, 4},  //2
+        Bridge{2, 0, 8},  //3
+        Bridge{2, 2, 6},  //4
+        Bridge{0, 0, 1}}; //5
 
-//     int result = build(w, e, allNodes);
-//     cout << result << endl;
-//     return 0;
-// }
+    int result = build(w, e, allNodes);
+    cout << result << endl;
+    return 0;
+}
