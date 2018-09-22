@@ -145,10 +145,37 @@ void setMaxToll(vector<myBridge> &bridges,
         bridges = currentBridgeState;
         bridges[canBuild[i]][status] = Status::Built;
         listStarter.push_back(canBuild[i]);
-        listIndexer++;
         //        listStarter[listIndexer++] = canBuild[i];
 
         setMaxToll(bridges, maxToll, listStarter, listIndexer, maxBridgeCount);
+    }
+    listStarter.pop_back();
+    return;
+}
+
+void setAdjacencyList(vector<myBridge> &bridges,
+                      vector<vector<int>> &adjacencyList,
+                      vector<int> &listStarter)
+{
+    auto canBuild = getBuildableBridges(bridges);
+
+    if (canBuild.size() == 0)
+    {
+        adjacencyList.push_back(listStarter);
+        //printList(adjacencyList);
+        listStarter.pop_back();
+        return;
+    }
+
+    auto currentBridgeState = getState(bridges);
+    //printAllNodes(bridges);
+    for (int i = 0; i < canBuild.size(); ++i)
+    {
+        bridges = currentBridgeState;
+        bridges[canBuild[i]][status] = Status::Built;
+        listStarter.push_back(canBuild[i]);
+        //printAllNodes(bridges);
+        setAdjacencyList(bridges, adjacencyList, listStarter);
     }
     listStarter.pop_back();
     return;
@@ -203,19 +230,36 @@ int build(int w, int e, const vector<Bridge> &bridges)
     return maxToll;
 }
 
-int main()
+int buildAdjacency(int w, int e, const vector<Bridge> &bridges)
 {
-    int w = 3;
-    int e = 3;
-    const vector<Bridge> allNodes{
-        Bridge{0, 1, 3},  //0
-        Bridge{1, 1, 5},  //1
-        Bridge{1, 2, 4},  //2
-        Bridge{2, 0, 8},  //3
-        Bridge{2, 2, 6},  //4
-        Bridge{0, 0, 1}}; //5
-
-    int result = build(w, e, allNodes);
-    cout << result << endl;
-    return 0;
+    int maxBridgeCount = min(w, e);
+    vector<myBridge> myBridges = translateToMyBridgeType(bridges);
+    //printAllNodes(myBridges);
+    vector<vector<int>> adjacencyList{};
+    //cout << adjacencyList.max_size() << endl;
+    //adjacencyList.reserve(100000000);
+    vector<int> listStarter{};
+    listStarter.reserve(maxBridgeCount);
+    int listIndexer = 0;
+    int maxToll = 0;
+    setAdjacencyList(myBridges, adjacencyList, listStarter);
+    printList(adjacencyList);
+    return getMaxTollPrice(adjacencyList, bridges);
 }
+
+// int main()
+// {
+//     int w = 3;
+//     int e = 3;
+//     const vector<Bridge> allNodes{
+//         Bridge{0, 1, 3},  //0
+//         Bridge{1, 1, 5},  //1
+//         Bridge{1, 2, 4},  //2
+//         Bridge{2, 0, 8},  //3
+//         Bridge{2, 2, 6},  //4
+//         Bridge{0, 0, 1}}; //5
+
+//     int result = buildAdjacency(w, e, allNodes);
+//     cout << result << endl;
+//     return 0;
+// }
