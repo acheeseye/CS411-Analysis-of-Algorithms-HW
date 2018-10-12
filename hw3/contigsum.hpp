@@ -26,17 +26,17 @@ struct node
 // precondition: none
 
 template <typename RAIter>
-node contigSumHelper(RAIter first, RAIter last)
+const node contigSumHelper(RAIter first, RAIter last)
 {
-    std::size_t size = last - first;
+    const std::size_t size = last - first;
     if (size <= 0)
     {
-        node blankNode;
+        const node blankNode;
         return blankNode;
     }
     else if (size == 1)
     {
-        int value = *first;
+        const int value = *first;
         node thisNode;
 
         if (value < 0)
@@ -56,8 +56,8 @@ node contigSumHelper(RAIter first, RAIter last)
         return thisNode;
     }
 
-    auto firstChunk = contigSumHelper(first, first + size / 2);
-    auto secondChunk = contigSumHelper(first + size / 2, last);
+    const auto firstChunk = contigSumHelper(first, first + size / 2);
+    const auto secondChunk = contigSumHelper(first + size / 2, last);
 
     node processedNode;
     processedNode.GCS = std::max({firstChunk.GCS, secondChunk.GCS, firstChunk.withRight + secondChunk.withLeft});
@@ -75,7 +75,7 @@ node contigSumHelper(RAIter first, RAIter last)
 // precondition: none
 
 template <typename RAIter>
-int contigSum(RAIter first, RAIter last)
+const int contigSum(RAIter first, RAIter last)
 {
     return contigSumHelper(first, last).GCS;
 }
