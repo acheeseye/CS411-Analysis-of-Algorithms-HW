@@ -831,26 +831,30 @@ void test_build_medium(Tester &t)
     }
 
     // Greedy fails large
-    // {
-    //     w = 20;
-    //     e = w;
-    //     bs.clear();
-    //     auto phi = (1+sqrt(5)/2);
-    //     auto phipower = phi;
-    //     for(auto i=0;i<w/2;++i) {
-    //         if (fmod(1,phipower) > 0.5) {
-    //             bs.push_back(Brg {  2*i,  2*i+1,  1 });
-    //             bs.push_back(Brg {  2*i+1,  2*i,  2 });
-    //         } else {
-    //             bs.push_back(Brg {  2*i,  2*i+1,  2 });
-    //             bs.push_back(Brg {  2*i+1,  2*i,  1 });
-    //         }
-    //         phipower *= phi;
-    //     }
-    //     ans = w;
-    //     test_build_single(t, w, e, cbs, ans,
-    //                       "Greedy fails large");
-    // }
+    {
+        w = 20;
+        e = w;
+        bs.clear();
+        auto phi = (1 + sqrt(5) / 2);
+        auto phipower = phi;
+        for (auto i = 0; i < w / 2; ++i)
+        {
+            if (fmod(1, phipower) > 0.5)
+            {
+                bs.push_back(Brg{2 * i, 2 * i + 1, 1});
+                bs.push_back(Brg{2 * i + 1, 2 * i, 2});
+            }
+            else
+            {
+                bs.push_back(Brg{2 * i, 2 * i + 1, 2});
+                bs.push_back(Brg{2 * i + 1, 2 * i, 1});
+            }
+            phipower *= phi;
+        }
+        ans = w;
+        test_build_single(t, w, e, cbs, ans,
+                          "Greedy fails large");
+    }
 
     // All bridges available #1
     {
